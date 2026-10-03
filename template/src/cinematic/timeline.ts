@@ -53,6 +53,23 @@ export function createVoicedTimeline(ids: readonly string[], voice: VoiceData, f
 	return {...layoutTimeline(timing, scenes.slice(1, -1).map((s) => s.len)), cues: Object.fromEntries(scenes.map((s) => [s.id, s.cues])) as Record<string, Cue[]>};
 }
 
+// 旁白在整片中的说话区间（绝对帧）。cover 从 0 开始，各段落从 segmentStarts 开始，closing 从 closingStart 开始。
+export function speechWindows(t: {segmentStarts: number[]; closingStart: number; cues: Record<string, Cue[]>}, ids: readonly string[]) {
+	const starts: [string, number][] = [['cover', 0], ...ids.map((id, i): [string, number] => [id, t.segmentStarts[i]]), ['closing', t.closingStart]];
+	return starts.flatMap(([id, s]) => (t.cues[id] ?? []).map((c): [number, number] => [s + c.from, s + c.from + c.dur]));
+}
+
+// 配乐闪避：说话时压到 under，句间回到 between，进出各 ramp 帧渐变。没有旁白时返回 1。
+export function musicVolume(frame: number, windows: readonly (readonly [number, number])[], {between = 0.6, under = 0.32, ramp = 8} = {}) {
+	if (windows.length === 0) return 1;
+	let talk = 0;
+	for (const [a, b] of windows) {
+		const v = Math.min((frame - (a - ramp)) / ramp, (b + ramp - frame) / ramp);
+		talk = Math.max(talk, Math.min(1, Math.max(0, v)));
+	}
+	return under * talk + between * (1 - talk);
+}
+
 // Keep every item inside the overview camera's existing framing, even after
 // inserting or removing items. Dense overviews still need a visual layout check.
 export function createOverviewLayout(items: readonly {diameter: number; texture: string}[]) {

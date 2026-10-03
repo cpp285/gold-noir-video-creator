@@ -25,11 +25,13 @@
     "bgm": "node scripts/bgm.mjs",
     "voice": "uvx --with edge-tts python scripts/tts.py",
     "voice:off": "uvx --with edge-tts python scripts/tts.py --off",
+    "voice:samples": "uvx --with edge-tts python scripts/tts.py --samples",
     "prebundle": "npm run bgm",
     "bundle": "remotion bundle --out-dir build",
     "still": "npm run bundle && remotion still build Main out/still.png --gl=angle",
     "still:cached": "remotion still build Main out/still.png --gl=angle",
     "render": "npm run bundle && remotion render build Main out/video.mp4 --gl=angle",
+    "master": "node scripts/master.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/render-config.test.mjs",
     "check": "npm run typecheck && npm test"

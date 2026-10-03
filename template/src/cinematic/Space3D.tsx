@@ -2,6 +2,7 @@ import React, {useMemo} from 'react';
 import * as THREE from 'three';
 import {useThree} from '@react-three/fiber';
 import {ThreeCanvas} from '@remotion/three';
+import {RoomEnvironment} from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type {Planet} from './data';
 import {planetTextures, ringTexture, ringGeometry, glowTexture} from './textures';
 
@@ -29,6 +30,21 @@ export const Stage: React.FC<{children: React.ReactNode}> = ({children}) => (
 		{children}
 	</ThreeCanvas>
 );
+
+// 柔和的环境反射。金属材质（棋子、硬币、奖杯等 metalness 较高的物体）没有环境可反射时，
+// 背光的一半会直接发黑；放进 <Stage> 即可。行星这类非金属物体不需要。
+export const Environment: React.FC<{intensity?: number}> = ({intensity = 0.22}) => {
+	const {gl, scene} = useThree();
+	const tex = useMemo(() => {
+		const pm = new THREE.PMREMGenerator(gl);
+		const t = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+		pm.dispose();
+		return t;
+	}, [gl]);
+	scene.environment = tex;
+	scene.environmentIntensity = intensity;
+	return null;
+};
 
 export const Lights: React.FC<{key1?: number; rim?: number}> = ({key1 = 3.2, rim = 1.6}) => (
 	<>
