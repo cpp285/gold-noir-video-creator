@@ -1,7 +1,9 @@
 {
-  "_说明": "配音旁白稿。npm run voice 逐句生成语音并测量时长，再写出 src/cinematic/voice.ts。scenes 顺序必须是 cover → 与 PLANETS 同序的各段落 id → closing。text 是字幕（【】标金），speak 是朗读文本：数字写成汉字、符号读成文字；不写 speak 时朗读去掉【】的 text。pacing 的单位是帧。",
+  "_说明": "配音旁白稿。npm run voice 逐句生成语音并测量时长，再写出 src/cinematic/voice.ts。scenes 顺序必须是 cover → 与 PLANETS 同序的各段落 id → closing。text 是字幕（【】标金），speak 是朗读文本：数字写成汉字、符号读成文字；不写 speak 时朗读去掉【】的 text。pitch 调音调，polish 控制人声后期处理（默认开）。选声音前可先运行 npm run voice:samples 生成试听对比。pacing 的单位是帧。",
   "voice": "zh-CN-XiaoxiaoNeural",
   "rate": "+0%",
+  "pitch": "+0Hz",
+  "polish": true,
   "fps": 30,
   "pacing": {
     "lead": 20,

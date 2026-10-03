@@ -82,3 +82,21 @@ test('voiced timeline follows measured narration lengths', async () => {
   assert.throws(() => createVoicedTimeline(['a', 'b'], voice, 24), /fps/);
   assert.throws(() => createVoicedTimeline(['a', 'b'], {...voice, scenes: voice.scenes.map((s) => s.id === 'b' ? {...s, len: 100} : s)}, 30), /does not fit/);
 });
+
+test('music ducks under narration and returns between sentences', async () => {
+  const {createVoicedTimeline, speechWindows, musicVolume} = await import('../src/cinematic/timeline.ts');
+  const cue = (id, from, dur) => ({id, from, dur, text: id});
+  const voice = {fps: 30, voice: 'v', rate: '+0%', scenes: [
+    {id: 'cover', len: 150, cues: [cue('cover-0', 12, 80)]},
+    {id: 'a', len: 200, cues: [cue('a-0', 20, 70)]},
+    {id: 'closing', len: 100, cues: [cue('closing-0', 10, 40)]},
+  ]};
+  const t = createVoicedTimeline(['a'], voice, 30);
+  const w = speechWindows(t, ['a']);
+  assert.deepEqual(w, [[12, 92], [170, 240], [360, 400]]);
+  assert.equal(musicVolume(50, w), 0.32);
+  assert.equal(musicVolume(130, w), 0.6);
+  const ramp = musicVolume(8, w);
+  assert.ok(ramp > 0.32 && ramp < 0.6);
+  assert.equal(musicVolume(50, []), 1);
+});

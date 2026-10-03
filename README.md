@@ -14,7 +14,7 @@ https://github.com/user-attachments/assets/f1d7b2bf-9a94-4600-b136-dd671e94c8b9
 
 ![太阳系示例的实际渲染画面：暗金标题、土星与星环、中文字幕和信息面板](docs/preview.jpg)
 
-默认示例为 **60 秒太阳系科普视频**：封面（首帧即完整标题画面，并抛出开场问题）→ 八个行星段落 → 全景收尾。输出为 1920×1080、30fps 的 MP4，包含字幕与配乐，默认不含旁白；可选用 `npm run voice` 生成免费的 AI 旁白（edge-tts），旁白、字幕与画面逐句对齐，详见 [SKILL.md](SKILL.md) 的“配音”一节。
+默认示例为 **60 秒太阳系科普视频**：封面（首帧即完整标题画面，并抛出开场问题）→ 八个行星段落 → 全景收尾。输出为 1920×1080、30fps 的 MP4，包含字幕与配乐，默认不含旁白；可选用 `npm run voice` 生成免费的 AI 旁白（edge-tts），旁白、字幕与画面逐句对齐；人声自动做后期处理以减轻 AI 味，配乐在说话时自动压低，选声音前可用 `npm run voice:samples` 生成试听对比，详见 [SKILL.md](SKILL.md) 的“配音”一节。
 
 ## 适合制作什么
 
@@ -33,7 +33,7 @@ https://github.com/user-attachments/assets/f1d7b2bf-9a94-4600-b136-dd671e94c8b9
 | 浏览器 | Remotion 首次渲染会下载 Chrome Headless Shell，需要联网及可用磁盘空间 |
 | 图形环境 | 支持 WebGL；渲染命令已配置 `--gl=angle` |
 | 字体 | macOS 优先使用 Songti SC / Baskerville / Didot；其他系统见下方说明 |
-| ffmpeg | 只有手动抽帧、制作拼图等额外检查需要安装命令行 ffmpeg |
+| ffmpeg | `npm run master`（响度标准化 / 变速）、配音的人声后期处理与试听对比需要；手动抽帧检查也会用到 |
 
 Windows 建议使用 PowerShell 运行 npm 命令；macOS / Linux 可使用终端。字体和 WebGL 环境不同会影响最终画面，发布前应在目标机器抽帧检查。
 
@@ -70,6 +70,7 @@ npm run check
 npm run dev                       # 打开 Remotion Studio，自动生成配乐
 npm run still -- --frame=470       # 重新生成配乐、打包、输出 out/still.png
 npm run render                    # 重新生成配乐、打包、输出 out/video.mp4
+npm run master                    # 响度标准化到 -16 LUFS，输出 out/video-master.mp4（交付用）
 ```
 
 若要建立独立项目，将 `template/` 的全部内容（包括隐藏文件和锁文件）复制到新的项目目录，再运行上述命令。Composition id 为 `Main`。

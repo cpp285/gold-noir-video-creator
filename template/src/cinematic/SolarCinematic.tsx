@@ -5,7 +5,7 @@ import type {Cue} from './timeline';
 import {Stage, Rig, Lights, PlanetBody, Sun, OrbitLine, project, type Vec3} from './Space3D';
 import {Background, Vignette, Grain, Fade, Dust, LatinBG, Dial, Subtitle, PlanetHUD, TitleCard, goldText} from './Overlay';
 
-import {createOverviewLayout} from './timeline';
+import {createOverviewLayout, speechWindows, musicVolume} from './timeline';
 
 const clampOpt = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 const ease = Easing.bezier(0.33, 0, 0.2, 1);
@@ -145,11 +145,14 @@ const ClosingScene: React.FC<{len: number}> = ({len}) => {
 	);
 };
 
+// 有旁白时配乐在说话处自动压低（闪避），句间回升；无旁白时满音量
+const SPEECH = VOICED ? speechWindows(TIMELINE, PLANETS.map((p) => p.id)) : [];
+
 export const SolarCinematic: React.FC = () => {
 	const frame = useCurrentFrame();
 	return (
 		<AbsoluteFill style={{background: '#050302'}}>
-			<Audio src={staticFile('bgm.wav')} volume={VOICED ? 0.5 : 1} />
+			<Audio src={staticFile('bgm.wav')} volume={(fr) => musicVolume(fr, SPEECH)} />
 			<Sequence durationInFrames={TIMELINE.hook + TIMELINE.title}><CoverScene len={TIMELINE.hook + TIMELINE.title} /></Sequence>
 			{PLANETS.map((p, i) => (
 				<Sequence key={p.id} from={TIMELINE.segmentStarts[i]} durationInFrames={TIMELINE.segmentLengths[i]}><PlanetScene p={p} index={i} len={TIMELINE.segmentLengths[i]} /></Sequence>
