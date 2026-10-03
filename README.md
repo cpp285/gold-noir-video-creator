@@ -4,11 +4,15 @@
 
 Skill 名称：`gold-noir-video-creator`。
 
-[![点击观看完整示例视频](docs/preview.gif)](docs/demo.mp4)
+## 效果预览
 
-[▶ 观看 / 下载完整 60 秒示例](docs/demo.mp4) · [查看 1080p 静态画面](docs/preview.jpg)
+**60 秒完整示例 · 1080p · 含配乐**，点击下方播放器即可在本页观看。
 
-上方为真实渲染视频的动态节选（无声）；完整 MP4 包含配乐。
+https://github.com/user-attachments/assets/f1d7b2bf-9a94-4600-b136-dd671e94c8b9
+
+**成片画面**
+
+![太阳系示例的实际渲染画面：暗金标题、土星与星环、中文字幕和信息面板](docs/preview.jpg)
 
 默认示例为 **60 秒太阳系科普视频**：开场提问 → 标题卡 → 八个行星段落 → 全景收尾。输出为 1920×1080、30fps 的 MP4，包含字幕与配乐，**不包含旁白配音**。
 
@@ -121,7 +125,7 @@ npm run render
 
 本次验证环境为 macOS / Node.js 24.16.0 / npm 11.13.0：已通过干净目录的锁文件安装、TypeScript 检查、5 项回归检查、模板打包和完整 60 秒渲染，并对成片抽帧检查。Windows / Linux 尚未进行实机渲染验证。
 
-仓库忽略 `node_modules/`、`build/`、`out/`、生成的 `bgm.wav`、环境文件和日志。本仓库保留 `docs/preview.gif`、`docs/preview.jpg` 和 `docs/demo.mp4`，用于首页展示。提交源码、锁文件和这些示例即可；后续较大的成片建议放入 GitHub Release。
+仓库忽略 `node_modules/`、`build/`、`out/`、生成的 `bgm.wav`、环境文件和日志。README 使用 GitHub 视频附件在首页内嵌播放完整示例，静态画面直接显示。本仓库保留 `docs/preview.gif`、`docs/preview.jpg` 和 `docs/demo.mp4` 作为预览素材及原始示例；更新首页视频时，需要同时替换 README 中的视频附件地址。后续较大的成片建议放入 GitHub Release。
 
 ## 许可证
 
