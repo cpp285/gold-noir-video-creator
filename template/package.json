@@ -5,19 +5,20 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
+    "@react-three/fiber": "9.8.1",
     "@remotion/cli": "4.0.532",
+    "@remotion/renderer": "4.0.532",
     "@remotion/three": "4.0.532",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "remotion": "4.0.532",
-    "three": "0.186.1",
-    "@react-three/fiber": "9.8.1"
+    "three": "0.186.1"
   },
   "devDependencies": {
     "@types/react": "19.2.7",
+    "@types/three": "0.186.0",
     "@types/web": "0.0.166",
-    "typescript": "5.9.3",
-    "@types/three": "0.186.0"
+    "typescript": "5.9.3"
   },
   "scripts": {
     "dev": "remotion studio",
@@ -30,6 +31,7 @@
     "bundle": "remotion bundle --out-dir build",
     "still": "npm run bundle && remotion still build Main out/still.png --gl=angle",
     "still:cached": "remotion still build Main out/still.png --gl=angle",
+    "stills": "node scripts/stills.mjs",
     "render": "npm run bundle && remotion render build Main out/video.mp4 --gl=angle",
     "master": "node scripts/master.mjs",
     "typecheck": "tsc --noEmit",
