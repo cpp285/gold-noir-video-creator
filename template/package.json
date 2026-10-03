@@ -1,0 +1,44 @@
+{
+  "name": "gold-noir-video-creator",
+  "version": "1.0.0",
+  "description": "暗金风格科普视频制作模板（Remotion + Three.js）",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@remotion/cli": "4.0.532",
+    "@remotion/three": "4.0.532",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.532",
+    "three": "0.186.1",
+    "@react-three/fiber": "9.8.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "@types/web": "0.0.166",
+    "typescript": "5.9.3",
+    "@types/three": "0.186.0"
+  },
+  "scripts": {
+    "dev": "remotion studio",
+    "predev": "npm run bgm",
+    "bgm": "node scripts/bgm.mjs",
+    "prebundle": "npm run bgm",
+    "bundle": "remotion bundle --out-dir build",
+    "still": "npm run bundle && remotion still build Main out/still.png --gl=angle",
+    "still:cached": "remotion still build Main out/still.png --gl=angle",
+    "render": "npm run bundle && remotion render build Main out/video.mp4 --gl=angle",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/render-config.test.mjs",
+    "check": "npm run typecheck && npm test"
+  },
+  "type": "module",
+  "engines": {
+    "node": "^22.18.0 || >=24.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cpp285/gold-noir-video-creator.git",
+    "directory": "template"
+  }
+}

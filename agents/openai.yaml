@@ -1,0 +1,4 @@
+interface:
+  display_name: "暗金视频制作"
+  short_description: "制作带 3D 场景、金色字幕与配乐的暗金风格科普视频"
+  default_prompt: "使用 $gold-noir-video-creator 制作一个暗金风格科普视频，先检查分镜与代表帧，再渲染 MP4。"

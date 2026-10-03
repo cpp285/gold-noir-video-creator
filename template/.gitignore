@@ -1,0 +1,12 @@
+node_modules/
+build/
+out/
+.cache/
+public/bgm.wav
+.DS_Store
+Thumbs.db
+*.log
+*.tsbuildinfo
+.env
+.env.*
+!.env.example

@@ -1,0 +1,13 @@
+**/node_modules/
+**/build/
+**/out/
+**/.cache/
+**/.DS_Store
+**/Thumbs.db
+**/*.log
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+!**/.env.example
+template/public/bgm.wav
+release/
