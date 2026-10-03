@@ -11,3 +11,4 @@
 !**/.env.example
 template/public/bgm.wav
 release/
+template/public/vo/

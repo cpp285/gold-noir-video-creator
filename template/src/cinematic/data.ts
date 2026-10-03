@@ -1,4 +1,5 @@
-import {createTimeline} from './timeline.ts';
+import {createTimeline, createVoicedTimeline, type Cue} from './timeline.ts';
+import {VOICE} from './voice.ts';
 
 export type PlanetId = 'mercury' | 'venus' | 'earth' | 'mars' | 'jupiter' | 'saturn' | 'uranus' | 'neptune';
 
@@ -37,7 +38,11 @@ export const HOOK = 120; // 0–4s 开场提问
 export const TITLE = 120; // 4–8s 标题
 export const SEG = 168; // 每颗行星 5.6s
 export const CLOSE = 216; // 收尾 7.2s
-export const TIMELINE = createTimeline(PLANETS.length, {fps: FPS, hook: HOOK, title: TITLE, segment: SEG, closing: CLOSE});
+// 不配音：使用上面的固定帧数。配音：运行 npm run voice 生成 voice.ts，时间轴改由旁白实测时长决定。
+export const VOICED = VOICE !== null;
+export const TIMELINE = VOICE
+	? createVoicedTimeline(PLANETS.map((p) => p.id), VOICE, FPS)
+	: {...createTimeline(PLANETS.length, {fps: FPS, hook: HOOK, title: TITLE, segment: SEG, closing: CLOSE}), cues: {} as Record<string, Cue[]>};
 export const TOTAL = TIMELINE.totalFrames; // 默认 1800 帧 = 60s
 
 export const GOLD = '#d9a54a';

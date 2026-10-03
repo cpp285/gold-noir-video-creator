@@ -23,6 +23,8 @@
     "dev": "remotion studio",
     "predev": "npm run bgm",
     "bgm": "node scripts/bgm.mjs",
+    "voice": "uvx --with edge-tts python scripts/tts.py",
+    "voice:off": "uvx --with edge-tts python scripts/tts.py --off",
     "prebundle": "npm run bgm",
     "bundle": "remotion bundle --out-dir build",
     "still": "npm run bundle && remotion still build Main out/still.png --gl=angle",
