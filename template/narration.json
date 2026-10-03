@@ -1,0 +1,47 @@
+{
+  "_说明": "配音旁白稿。npm run voice 逐句生成语音并测量时长，再写出 src/cinematic/voice.ts。scenes 顺序必须是 cover → 与 PLANETS 同序的各段落 id → closing。text 是字幕（【】标金），speak 是朗读文本：数字写成汉字、符号读成文字；不写 speak 时朗读去掉【】的 text。pacing 的单位是帧。",
+  "voice": "zh-CN-XiaoxiaoNeural",
+  "rate": "+0%",
+  "fps": 30,
+  "pacing": {
+    "lead": 20,
+    "gap": 20,
+    "tail": 30,
+    "scenes": {
+      "cover": {"lead": 12, "gap": 14, "tail": 24, "min": 150},
+      "closing": {"tail": 96}
+    }
+  },
+  "scenes": [
+    {"id": "cover", "cues": [
+      {"text": "我们住的地方，到底有【多大】？"}
+    ]},
+    {"id": "mercury", "cues": [
+      {"text": "水星：白天【430℃】，夜晚【-180℃】。", "speak": "水星，白天四百三十摄氏度，夜晚零下一百八十摄氏度。"}
+    ]},
+    {"id": "venus", "cues": [
+      {"text": "金星自转一圈，比绕太阳一圈【还要久】。"}
+    ]},
+    {"id": "earth", "cues": [
+      {"text": "地球，目前唯一已知有【生命】的星球。"}
+    ]},
+    {"id": "mars", "cues": [
+      {"text": "火星上有太阳系最大的火山：【奥林匹斯山】。", "speak": "火星上有太阳系最大的火山，奥林匹斯山。"}
+    ]},
+    {"id": "jupiter", "cues": [
+      {"text": "木星的体积，能装下【1300 多个】地球。", "speak": "木星的体积，能装下一千三百多个地球。"}
+    ]},
+    {"id": "saturn", "cues": [
+      {"text": "土星的平均密度，【比水还小】。"}
+    ]},
+    {"id": "uranus", "cues": [
+      {"text": "天王星几乎是【躺着】绕太阳转的。"}
+    ]},
+    {"id": "neptune", "cues": [
+      {"text": "海王星的风速，最高超过每小时【2000 公里】。", "speak": "海王星的风速，最高超过每小时两千公里。"}
+    ]},
+    {"id": "closing", "cues": [
+      {"text": "太阳系诞生于约【46 亿年前】。", "speak": "太阳系诞生于约四十六亿年前。"}
+    ]}
+  ]
+}

@@ -13,14 +13,13 @@ export function scoreEvents(timeline) {
   const sec = (frame) => frame / timeline.fps;
   const title = sec(timeline.hook);
   const close = sec(timeline.closingStart);
-  const segmentSeconds = sec(timeline.segment);
   return [
     {kind: 'bell', at: sec(timeline.hook) * 0.15, note: 69, amp: 0.12},
     {kind: 'bell', at: title, note: 57, amp: 0.16},
     {kind: 'bell', at: title, note: 64, amp: 0.08},
     {kind: 'whoosh', at: title - 0.6, length: 1.4, amp: 0.6},
     ...timeline.segmentStarts.flatMap((frame, i) => [
-      {kind: 'bell', at: sec(frame) + Math.min(0.15, segmentSeconds / 4), note: notes[i % notes.length], amp: 0.08},
+      {kind: 'bell', at: sec(frame) + Math.min(0.15, sec(timeline.segmentLengths[i]) / 4), note: notes[i % notes.length], amp: 0.08},
       {kind: 'whoosh', at: sec(frame) - 0.5, length: 1, amp: 0.35},
     ]),
     {kind: 'bell', at: close, note: 57, amp: 0.14},

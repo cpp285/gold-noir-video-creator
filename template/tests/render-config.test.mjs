@@ -60,3 +60,25 @@ test('empty content and invalid timing are rejected before rendering', () => {
   assert.throws(() => createTimeline(1, {fps: 0, hook: 120, title: 120, segment: 168, closing: 216}), /fps/);
   assert.throws(() => createTimeline(1, {fps: 30, hook: 120, title: 120, segment: -1, closing: 216}), /segment/);
 });
+
+test('voiced timeline follows measured narration lengths', async () => {
+  const {createVoicedTimeline} = await import('../src/cinematic/timeline.ts');
+  const cue = (id, from, dur) => ({id, from, dur, text: id});
+  const voice = {fps: 30, voice: 'zh-CN-XiaoxiaoNeural', rate: '+0%', scenes: [
+    {id: 'cover', len: 150, cues: [cue('cover-0', 12, 80)]},
+    {id: 'a', len: 200, cues: [cue('a-0', 20, 70), cue('a-1', 110, 60)]},
+    {id: 'b', len: 330, cues: [cue('b-0', 20, 280)]},
+    {id: 'closing', len: 250, cues: [cue('closing-0', 20, 130)]},
+  ]};
+  const t = createVoicedTimeline(['a', 'b'], voice, 30);
+  assert.deepEqual(t.segmentStarts, [150, 350]);
+  assert.deepEqual(t.segmentLengths, [200, 330]);
+  assert.equal(t.closingStart, 680);
+  assert.equal(t.totalFrames, 930);
+  assert.equal(t.cues.a[1].from, 110);
+  const bells = scoreEvents(t).filter((e) => e.kind === 'bell');
+  assert.ok(bells.some((e) => Math.abs(e.at - (350 / 30 + 0.15)) < 1e-9));
+  assert.throws(() => createVoicedTimeline(['b', 'a'], voice, 30), /narration scenes/);
+  assert.throws(() => createVoicedTimeline(['a', 'b'], voice, 24), /fps/);
+  assert.throws(() => createVoicedTimeline(['a', 'b'], {...voice, scenes: voice.scenes.map((s) => s.id === 'b' ? {...s, len: 100} : s)}, 30), /does not fit/);
+});

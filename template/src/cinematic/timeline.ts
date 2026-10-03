@@ -13,14 +13,44 @@ export function createTimeline(count: number, timing: Timing) {
 			throw new Error(`${name} must be a positive integer`);
 		}
 	}
+	return layoutTimeline(timing, Array.from({length: count}, () => timing.segment));
+}
+
+export type Timeline = ReturnType<typeof layoutTimeline>;
+
+function layoutTimeline(timing: Timing, segmentLengths: number[]) {
 	const segmentStart = timing.hook + timing.title;
-	const closingStart = segmentStart + count * timing.segment;
+	const segmentStarts = segmentLengths.map((_, i) => segmentStart + segmentLengths.slice(0, i).reduce((a, b) => a + b, 0));
+	const closingStart = segmentStart + segmentLengths.reduce((a, b) => a + b, 0);
 	return {
 		...timing,
-		segmentStarts: Array.from({length: count}, (_, i) => segmentStart + i * timing.segment),
+		segmentStarts,
+		segmentLengths,
 		closingStart,
 		totalFrames: closingStart + timing.closing,
 	};
+}
+
+// 配音模式：由 scripts/tts.py 按每句旁白的实测时长生成。
+// 场景顺序固定为 cover（封面，占用 hook + title）→ 各段落（与内容数组同序）→ closing。
+export type Cue = {id: string; from: number; dur: number; text: string};
+export type VoiceScene = {id: string; len: number; cues: Cue[]};
+export type VoiceData = {fps: number; voice: string; rate: string; scenes: VoiceScene[]};
+
+export function createVoicedTimeline(ids: readonly string[], voice: VoiceData, fps: number) {
+	if (voice.fps !== fps) throw new Error(`voice.ts was generated at ${voice.fps}fps but the composition uses ${fps}fps; run npm run voice again`);
+	const expected = ['cover', ...ids, 'closing'];
+	const got = voice.scenes.map((s) => s.id);
+	if (got.join('|') !== expected.join('|')) {
+		throw new Error(`narration scenes must be [${expected.join(', ')}] but voice.ts has [${got.join(', ')}]; edit narration.json and run npm run voice`);
+	}
+	for (const s of voice.scenes) {
+		if (!Number.isSafeInteger(s.len) || s.len <= 0) throw new Error(`scene ${s.id} must have a positive integer length`);
+		for (const c of s.cues) if (c.from < 0 || c.from + c.dur > s.len) throw new Error(`cue ${c.id} does not fit inside scene ${s.id}`);
+	}
+	const scenes = voice.scenes;
+	const timing = {fps, hook: scenes[0].len, title: 0, segment: scenes[1]?.len ?? 0, closing: scenes[scenes.length - 1].len};
+	return {...layoutTimeline(timing, scenes.slice(1, -1).map((s) => s.len)), cues: Object.fromEntries(scenes.map((s) => [s.id, s.cues])) as Record<string, Cue[]>};
 }
 
 // Keep every item inside the overview camera's existing framing, even after

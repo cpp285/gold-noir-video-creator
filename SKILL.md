@@ -1,11 +1,11 @@
 ---
 name: gold-noir-video-creator
-description: 制作暗金、黑金电影感的科普与知识讲解视频（dark-gold explainer videos）。使用 Remotion + Three.js 输出带 3D 物体、金色衬线标题、刻度表盘、数据面板、逐字字幕和程序合成配乐的 MP4。用户要求制作这种风格的视频、复用 gold-noir-video-creator 模板，或提供相同风格的视频参考时使用。附 1920×1080 太阳系示例；不适用于未指定此风格的普通视频需求、明亮卡通或真人实拍。
+description: 制作暗金、黑金电影感的科普与知识讲解视频（dark-gold explainer videos）。使用 Remotion + Three.js 输出带 3D 物体、金色衬线标题、刻度表盘、数据面板、逐字字幕、程序合成配乐和可选 AI 旁白配音（edge-tts，音画逐句对齐）的 MP4。用户要求制作这种风格的视频、复用 gold-noir-video-creator 模板，或提供相同风格的视频参考时使用。附 1920×1080 太阳系示例；不适用于未指定此风格的普通视频需求、明亮卡通或真人实拍。
 ---
 
 # 暗金风格视频制作（gold-noir-video-creator）
 
-用同级 `template/` 中的 Remotion + Three.js 项目制作视频。默认示例为 60 秒太阳系科普，1920×1080、30fps，Composition id 为 `Main`。输出含字幕和程序合成配乐，不含旁白配音。
+用同级 `template/` 中的 Remotion + Three.js 项目制作视频。默认示例为 60 秒太阳系科普，1920×1080、30fps，Composition id 为 `Main`。默认输出字幕和程序合成配乐，不含旁白；需要配音时按下文“配音”一节开启，旁白与字幕、画面逐句对齐。
 
 模板支持本地渲染，无需购买素材或调用付费生成 API；Remotion 的适用许可条件见 [官方说明](https://www.remotion.dev/docs/license/pricing)。环境与字体安装见 [README.md](README.md)。
 
@@ -37,6 +37,7 @@ npm run render
 
 Windows 可使用文件管理器复制完整模板，然后在 PowerShell 进入项目目录运行 npm 命令。不要覆盖已有项目文件。
 
+- `npm run voice` 按 `narration.json` 生成旁白和配音时间轴；`npm run voice:off` 关闭配音。详见“配音”。
 - `npm run dev` 启动 Studio，自动生成配乐。
 - `npm run still` 和 `npm run render` 都会重新生成配乐、打包，再输出 `out/still.png` 或 `out/video.mp4`。
 - 连续抽帧可先 `npm run bundle`，再 `npm run still:cached -- --frame=300`。每次会覆盖同一张图片，需保留时先另存；修改内容后重新打包。
@@ -53,6 +54,9 @@ Windows 可使用文件管理器复制完整模板，然后在 PowerShell 进入
 | `src/cinematic/Space3D.tsx` | 相机、灯光、物体、轨道和 3D 到 2D 的投影 |
 | `src/cinematic/textures.ts` | 带种子噪声的程序化纹理 |
 | `scripts/bgm.mjs` | 读取共用时间线，合成 PCM 配乐、钟声与转场声 |
+| `narration.json` | 旁白稿：每个场景的字幕文本、朗读文本、声音、语速和停顿 |
+| `scripts/tts.py` | 逐句生成旁白 mp3 到 `public/vo/`，实测时长，写出 `voice.ts` |
+| `src/cinematic/voice.ts` | 生成的配音时间轴；为 `null` 时不配音，使用固定时长 |
 
 ## 视觉规范
 
@@ -66,11 +70,54 @@ Windows 可使用文件管理器复制完整模板，然后在 PowerShell 进入
 
 ## 时长与内容数量
 
-默认结构：开场 `HOOK = 120` 帧 → 标题 `TITLE = 120` 帧 → `PLANETS.length` 个段落，每段 `SEG = 168` 帧 → 收尾 `CLOSE = 216` 帧。
+默认结构：封面（`HOOK = 120` + `TITLE = 120` 帧，合并为一个场景）→ `PLANETS.length` 个段落，每段 `SEG = 168` 帧 → 收尾 `CLOSE = 216` 帧。
 
 在 `data.ts` 修改数组及帧数，视频总时长、段落起点、面板总数、收尾布局和配乐时长会同步更新；不需要手工改配乐的秒数。场景内部的入场、退场效果按对应段落时长缩放。随后运行 `npm run still` 或 `npm run render`。
 
 至少保留一个内容项；帧率、各段帧数须为正整数。每项 `id` 唯一，`texture` 独立选择内置纹理，允许多个段落复用同一种纹理。很多项目或很短的段落需要额外检查标签布局与字幕可读性。
+
+## 首帧即封面
+
+第 0 帧必须是完整、可辨认的画面：标题已经显现、主体物体已经点亮，不从黑场淡入。视频未播放时的预览图和平台封面都取首帧，黑首帧会让观众看不出内容。
+
+- 模板的 `CoverScene` 把标题卡放在左侧、主体放在右侧；`TitleCard` 传入 `f={frame + 96}`，入场动画在第 0 帧已经完成。
+- 封面只做淡出，不做淡入；开场提问以字幕（或旁白）形式放在封面上。
+- 换主题时同步替换封面的标题、副题和主体物体。交付前抽 `--frame=0` 确认。
+
+## 配音（可选）
+
+旁白用 [edge-tts](https://github.com/rany2/edge-tts) 调用微软在线神经网络语音：免费、音质接近真人，需要联网，另需 `uv`（提供 `uvx`）和 `ffprobe`。它使用的是微软 Edge 朗读服务，并非官方付费 API；商用前请让用户自行确认条款。
+
+### 核心原则：时间轴跟着旁白走
+
+**不要**把一整段旁白铺在固定时长的画面上，也不要在渲染后再混音。那样字幕和画面切换点与语音无关，必然不同步。正确流程：
+
+1. 旁白稿按句写进 `narration.json`，每句对应一条字幕。
+2. `npm run voice` 逐句生成 `public/vo/<场景>-<序号>.mp3`，用 `ffprobe` 实测时长，按停顿规则排出每个场景的长度和每句的起始帧，写出 `src/cinematic/voice.ts`。
+3. 合成读取 `voice.ts`：场景长度、段落起点、配乐钟声都由它决定；每句的 `<Audio>` 与字幕挂在**同一帧**；画面里的关键事件（爆发、高亮、物体变化）也以某句旁白的起始帧为锚点。
+4. `npm run render` 在 Remotion 中一次性渲染画面与全部音频。
+
+### narration.json
+
+- `scenes` 顺序固定：`cover` → 与内容数组同序的各段落 `id` → `closing`。不一致时 `createVoicedTimeline` 会报错并给出期望顺序。
+- 每句 `text` 是字幕（`【】` 标金）；`speak` 是朗读文本，省略时朗读去掉 `【】` 的 `text`。
+- 朗读文本的写法：数字写成汉字（`46 亿` → `四十六亿`），`-260℃` → `零下二百六十摄氏度`，`≈ > ·` 等符号改写成文字或删掉，单位写全称。字幕保留阿拉伯数字。
+- 每段 1–2 句，每句约 12–25 字（3–6 秒）。句子过长会拖长场景，字幕也可能超出一行。
+- `pacing`（单位：帧）：默认句前 `lead 20`、句间 `gap 20`、句后 `tail 30`；封面 `lead 12 / gap 14 / tail 24 / min 150`；收尾 `tail 96` 留给片名卡。需要更多停顿的场景（如爆发前的静默）可单独加大 `gap`。
+
+### 声音与混音
+
+- 默认 `zh-CN-XiaoxiaoNeural`：女声、温暖平稳，适合知识类内容。其他可选：`zh-CN-YunyangNeural`（男声，新闻播报）、`zh-CN-YunxiNeural`（男声，轻快）、`zh-CN-YunjianNeural`（男声，激昂）。完整列表：`uvx edge-tts --list-voices`。
+- `rate` 默认 `+0%`，建议在 `-10%` 到 `+10%` 之间调整。
+- 开启配音后，配乐音量自动降为 0.5，旁白为 1。
+- 修改旁白稿、声音或语速后重新运行 `npm run voice`；内容没变的句子会复用已生成的音频。在线服务偶尔断连时，脚本会自动重试。
+
+### 配音交付检查
+
+- `npm run check` 通过，`voice.ts` 中各场景时长合理。
+- 抽首帧确认封面；抽每个场景中段的帧，确认字幕不超出一行。
+- 渲染后用 `ffprobe` 确认存在音轨、总时长等于 `voice.ts` 的总帧数；可用 `volumedetect` 确认旁白区间有声音。
+- 无法试听时如实说明，请用户确认语速、音色和音量比例。不要声称已经听过，也不要凭推测宣称“已同步”。可以说明同步的依据：每句音频与字幕挂在同一帧。
 
 ## 更换主题
 
@@ -110,4 +157,5 @@ Windows 可使用文件管理器复制完整模板，然后在 PowerShell 进入
 
 1. 执行 `npm run check`。每个场景抽取代表帧，检查字幕、中文字体、物体与表盘对位和黑边。
 2. 渲染完整视频后，使用 ffmpeg 以 0.5fps 抽帧检查全过程；核对总时长和音轨是否存在。
-3. 使用可用音频工具试听。无法实际试听时如实说明，并请用户检查配乐音量与转场钟声，不能声称已听过。
+3. 抽 `--frame=0` 确认首帧是完整封面。
+4. 使用可用音频工具试听。无法实际试听时如实说明，并请用户检查配乐音量、转场钟声和旁白，不能声称已听过。
