@@ -99,7 +99,7 @@ export const Dial: React.FC<{cx: number; cy: number; r: number; progress: number
 };
 
 // 宋体字幕：逐字模糊淡入，【】内为金色关键词
-export const Subtitle: React.FC<{text: string; f: number; start: number; end: number; bottom?: number; size?: number}> = ({text, f, start, end, bottom = 78, size = 62}) => {
+export const Subtitle: React.FC<{text: string; f: number; start: number; end: number; bottom?: number; size?: number; en?: string}> = ({text, f, start, end, bottom = 78, size = 62, en}) => {
 	const parts: {ch: string; gold: boolean}[] = [];
 	let gold = false;
 	for (const ch of text) {
@@ -108,9 +108,11 @@ export const Subtitle: React.FC<{text: string; f: number; start: number; end: nu
 		parts.push({ch, gold});
 	}
 	const out = interpolate(f, [end - 12, end], [1, 0], clampOpt);
+	const enOut = interpolate(f, [start + 26, start + 44], [0, 1], clampOpt) * out;
 	return (
-		<div style={{position: 'absolute', left: 0, right: 0, bottom, textAlign: 'center', fontFamily: SERIF_ZH, fontWeight: 700, fontSize: size, letterSpacing: '0.06em',
+		<div style={{position: 'absolute', left: 0, right: 0, bottom, textAlign: 'center',
 			color: IVORY, opacity: out, filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.85))'}}>
+		<div style={{fontFamily: SERIF_ZH, fontWeight: 700, fontSize: size, letterSpacing: '0.06em'}}>
 			{parts.map((p, i) => {
 				const t = interpolate(f, [start + i * 1.3, start + i * 1.3 + 10], [0, 1], {...clampOpt, easing: ease});
 				return (
@@ -119,6 +121,14 @@ export const Subtitle: React.FC<{text: string; f: number; start: number; end: nu
 					</span>
 				);
 			})}
+		</div>
+		{en && (
+			<div style={{marginTop: 14, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 14, opacity: enOut}}>
+				<span style={{height: 1, width: 42, background: `${GOLD}88`, display: 'inline-block'}} />
+				<span style={{fontFamily: SERIF_LA, fontStyle: 'italic', fontSize: size * 0.36, letterSpacing: '0.06em', color: '#c9b48a'}}>{en}</span>
+				<span style={{height: 1, width: 42, background: `${GOLD}88`, display: 'inline-block'}} />
+			</div>
+		)}
 		</div>
 	);
 };
