@@ -146,3 +146,106 @@ export const Tag: React.FC<{x: number; y: number; op: number; children: React.Re
 		fontFamily: SERIF_ZH, fontSize: size, letterSpacing: '0.12em', color, whiteSpace: 'nowrap',
 		...(boxed ? {padding: '6px 16px', border: `1px solid ${GOLD}88`, background: 'rgba(8,12,34,0.72)', borderRadius: 4} : {})}}>{children}</div>
 );
+
+// ═══════════════════════════════════════════════════════════════
+// 第二版新增：画面底板 / 引线标注 / 图表框 / 计数器 / 角落标记
+// ═══════════════════════════════════════════════════════════════
+
+// 淡网格纸：给线描图形一个承托面（工程图纸感）
+export const PaperGrid: React.FC<{op?: number; size?: number; x?: number; y?: number; w?: number; h?: number}> = ({op = 0.5, size = 64, x = 0, y = 0, w = 1920, h = 1080}) => (
+	<svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{position: 'absolute', left: x, top: y, opacity: op, pointerEvents: 'none'}}>
+		<defs>
+			<pattern id="pg" width={size} height={size} patternUnits="userSpaceOnUse">
+				<path d={`M${size} 0 L0 0 0 ${size}`} fill="none" stroke="#c9a86a" strokeWidth="1" strokeOpacity="0.30" />
+			</pattern>
+			<radialGradient id="pgm" cx="50%" cy="48%" r="62%">
+				<stop offset="0%" stopColor="#fff" stopOpacity="1" />
+				<stop offset="62%" stopColor="#fff" stopOpacity="0.55" />
+				<stop offset="100%" stopColor="#fff" stopOpacity="0" />
+			</radialGradient>
+			<mask id="pgMask"><rect width={w} height={h} fill="url(#pgm)" /></mask>
+		</defs>
+		<rect width={w} height={h} fill="url(#pg)" mask="url(#pgMask)" />
+	</svg>
+);
+
+// 细线分隔 + 角标：图表与数据面板的边框语言
+export const ChartFrame: React.FC<{x: number; y: number; w: number; h: number; op?: number; corner?: number; grid?: boolean; gridStep?: number}> = ({x, y, w, h, op = 1, corner = 22, grid = false, gridStep = 48}) => {
+	if (op <= 0.001) return null;
+	return (
+		<g opacity={op}>
+			{grid && (
+				<g stroke={GOLD} strokeOpacity={0.1} strokeWidth={1}>
+					{Array.from({length: Math.floor(h / gridStep)}, (_, i) => <line key={`h${i}`} x1={x} y1={y + h - (i + 1) * gridStep} x2={x + w} y2={y + h - (i + 1) * gridStep} />)}
+				</g>
+			)}
+			<line x1={x} y1={y + h} x2={x + w} y2={y + h} stroke={GOLD} strokeOpacity={0.45} strokeWidth={1.4} />
+			{[[x, y + h, 1, -1], [x + w, y + h, -1, -1]].map(([cx, cy, sx, sy], i) => (
+				<path key={i} d={`M${cx + (sx as number) * corner} ${cy} L${cx} ${cy} L${cx} ${cy + (sy as number) * corner}`} fill="none" stroke={GOLD_L} strokeOpacity={0.55} strokeWidth={1.6} />
+			))}
+		</g>
+	);
+};
+
+// 图表左上角的小标签（参考片那种方框注释）
+export const BoxLabel: React.FC<{x: number; y: number; op?: number; anchor?: 'left' | 'right'; size?: number; color?: string; children: React.ReactNode}> = ({x, y, op = 1, anchor = 'left', size = 20, color = DIM, children}) => (
+	<div style={{position: 'absolute', left: x, top: y, transform: anchor === 'right' ? 'translate(-100%, -50%)' : 'translate(0, -50%)', opacity: op,
+		padding: '7px 16px', border: `1px solid ${GOLD}77`, background: 'rgba(8,12,34,0.82)', fontFamily: SERIF_ZH, fontSize: size, letterSpacing: '0.14em', color, whiteSpace: 'nowrap'}}>{children}</div>
+);
+
+export type AnnotSide = 'left' | 'right' | 'up' | 'down';
+// 引线标注：空心圆编号 + 折线 + 方框文字。禁止标签压在图形本体上。
+export const Annot: React.FC<{x: number; y: number; to: [number, number]; side: AnnotSide; op?: number; num?: string; label: string; sub?: string; size?: number; color?: string}> = ({x, y, to, side, op = 1, num, label, sub, size = 24, color = GOLD_L}) => {
+	if (op <= 0.001) return null;
+	const dx = to[0] - x;
+	const bend = side === 'left' || side === 'right' ? Math.min(96, Math.abs(dx) * 0.5) : 0;
+	const dir = dx >= 0 ? 1 : -1;
+	const anchor: 'start' | 'middle' | 'end' = side === 'right' ? 'start' : side === 'left' ? 'end' : 'middle';
+	const labelX = side === 'left' ? x - bend - 18 : side === 'right' ? x + bend + 18 : x;
+	const labelY = side === 'down' ? y + 52 : side === 'up' ? y - 30 : y - 22;
+	return (
+		<g opacity={op}>
+			<path d={`M${to[0]} ${to[1]} H${to[0] + dir * bend} L${x} ${y}`} fill="none" stroke={GOLD} strokeOpacity={0.75} strokeWidth={1.4} />
+			<circle cx={x} cy={y} r={16} fill="rgba(8,12,34,0.92)" stroke={GOLD_L} strokeWidth={1.6} />
+			{num && <text x={x} y={y + 7} textAnchor="middle" fontFamily={SERIF_LA} fontSize={19} fill={GOLD_L}>{num}</text>}
+			<text x={labelX} y={labelY} textAnchor={anchor} fontFamily={SERIF_ZH} fontSize={size} letterSpacing={2} fill={color}>{label}</text>
+			{sub && <text x={labelX} y={labelY + size * 1.3} textAnchor={anchor} fontFamily={SERIF_ZH} fontSize={size * 0.76} letterSpacing={1} fill={DIM}>{sub}</text>}
+		</g>
+	);
+};
+
+// 左上角计数器：一个会走的数字，让"重复两百轮"这件事看得见
+export const Counter: React.FC<{x: number; y: number; value: number; label: string; sub?: string; op?: number; size?: number; color?: string}> = ({x, y, value, label, sub, op = 1, size = 52, color = GOLD_L}) => (
+	<div style={{position: 'absolute', left: x, top: y, opacity: op, display: 'flex', alignItems: 'flex-end', gap: 14, pointerEvents: 'none'}}>
+		<Odometer value={Math.max(0, Math.round(value))} size={size} color={color} />
+		<div style={{fontFamily: SERIF_ZH, fontSize: size * 0.34, letterSpacing: '0.2em', color: DIM, paddingBottom: size * 0.14}}>
+			<div>{label}</div>
+			{sub && <div style={{fontSize: size * 0.28, marginTop: 2, opacity: 0.75}}>{sub}</div>}
+		</div>
+	</div>
+);
+
+// 片头标题卡：一枚大印章 + 章名 + 双语副题（约 3 秒）
+export const TitleCard: React.FC<{f: number; s: number; d: number; seal: string; name: string; series: string; en: string; instant?: boolean}> = ({f, s, d, seal, name, series, en, instant = false}) => {
+	const t = f - s;
+	// instant：第 0 帧就是完成状态（封面），只做淡出，不做淡入
+	const op = instant ? Math.min(1, 1 - k(f, s + d - 14, s + d, easeIO)) : win(f, s, s + d, 10, 12);
+	const ink = instant ? 1 : k(t, 4, 22);
+	const line = instant ? 1 : k(t, 22, 44, easeIO);
+	return (
+		<AbsoluteFill style={{opacity: op, pointerEvents: 'none'}}>
+			<AbsoluteFill style={{background: 'radial-gradient(ellipse 64% 48% at 50% 47%, rgba(6,9,26,0.9), rgba(5,8,26,0.6) 68%, rgba(5,8,26,0.15))'}} />
+			<div style={{position: 'absolute', left: 0, right: 0, top: 372, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 38}}>
+				<Seal ch={seal} size={96} stamp={instant ? 1 : k(t, 2, 16, Easing.bezier(0.5, 0, 0.75, 0))} style={{marginTop: -40}} />
+				<div style={{fontFamily: SERIF_ZH, fontWeight: 700, fontSize: 146, letterSpacing: '0.2em', ...goldText,
+					filter: `blur(${(1 - ink) * 12}px) drop-shadow(0 0 34px rgba(217,165,74,0.4))`, opacity: ink, transform: `translateY(${(1 - ink) * 18}px)`}}>{name}</div>
+			</div>
+			<div style={{position: 'absolute', left: 0, right: 0, top: 578, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 20, opacity: instant ? 1 : k(t, 24, 46)}}>
+				<span style={{height: 1, width: line * 120, background: `${GOLD}aa`, display: 'inline-block'}} />
+				<span style={{fontFamily: SERIF_ZH, fontSize: 34, letterSpacing: '0.24em', color: GOLD_L}}>{series}</span>
+				<span style={{height: 1, width: line * 120, background: `${GOLD}aa`, display: 'inline-block'}} />
+			</div>
+			<div style={{position: 'absolute', left: 0, right: 0, top: 640, textAlign: 'center', fontFamily: SERIF_LA, fontStyle: 'italic', fontSize: 24, letterSpacing: '0.14em', color: DIM, opacity: instant ? 1 : k(t, 34, 56)}}>{en}</div>
+		</AbsoluteFill>
+	);
+};
